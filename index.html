@@ -5,11 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Sifon Clicker</title>
   <style>
-    /* ... CSS la fel ca înainte, nu schimb nimic aici ... */
     body {
       background:
         linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
-        url('https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Siphon_bottle_2013.jpg/1280px-Siphon_bottle_2013.jpg') no-repeat center center fixed;
+        url('fundal.jpg') no-repeat center center fixed;
       background-size: cover;
       color: #eee;
       font-family: 'Segoe UI', sans-serif;
@@ -35,10 +34,9 @@
     #sifon {
       width: 200px;
       height: 200px;
-      background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Siphon_bottle_2013.jpg/320px-Siphon_bottle_2013.jpg') no-repeat center/cover;
-      border-radius: 50%;
+      background: url('sifon mic.png') no-repeat center/contain;
       cursor: pointer;
-      box-shadow: 0 0 30px rgba(0, 255, 200, 0.2);
+      border: none; /* Eliminat bordura */
       transition: transform 0.1s;
       margin: 0 auto 20px;
       position: relative;
@@ -114,14 +112,13 @@
       cursor: not-allowed;
       color: #044404;
     }
-    /* Click animation */
     #sifon.clicked {
       animation: clickpop 0.15s ease forwards;
     }
     @keyframes clickpop {
-      0% { transform: scale(1); box-shadow: 0 0 30px rgba(0,255,200,0.2); }
-      50% { transform: scale(1.1); box-shadow: 0 0 60px rgba(0,255,200,0.8); }
-      100% { transform: scale(1); box-shadow: 0 0 30px rgba(0,255,200,0.2); }
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
     }
     #volumeControl {
       margin-top: 10px;
@@ -158,16 +155,16 @@
     <audio id="clickSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_f07d8a4bbd.mp3" preload="auto"></audio>
     <audio id="upgradeSound" src="https://cdn.pixabay.com/download/audio/2022/03/26/audio_5d9ef5d9f8.mp3" preload="auto"></audio>
     <audio id="prestigeSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_23ce37b5d6.mp3" preload="auto"></audio>
+    <audio id="bgMusic" src="rat dance.mp3" loop preload="auto"></audio>
   </div>
 
   <script>
     let score = 0;
     let prestigeMultiplier = 1;
-    let boostActive = false;
     let soundOn = true;
 
     const scoreDisplay = document.getElementById('score');
-    const multiplierDisplay = document.getElementById('multiplierDisplay');
+    const multiplierDisplay = document.querySelector('#multiplierDisplay');
     const message = document.getElementById('message');
     const upgradesDiv = document.getElementById('upgrades');
     const prestigeBtn = document.getElementById('prestigeBtn');
@@ -179,145 +176,121 @@
     const clickSound = document.getElementById('clickSound');
     const upgradeSound = document.getElementById('upgradeSound');
     const prestigeSound = document.getElementById('prestigeSound');
+    const bgMusic = document.getElementById('bgMusic');
+    bgMusic.volume = volumeSlider.value;
+
+    document.body.addEventListener('click', () => {
+      if (soundOn && bgMusic.paused) bgMusic.play();
+    }, { once: true });
 
     const upgrades = [
-      {
-        name: 'Sifon Turbo',
-        baseCost: 100,
-        level: 0,
-        maxLevel: 10,
-        clickBoost: 1,
-        autoClickBoost: 0
-      },
-      {
-        name: 'Robot de Sifonat',
-        baseCost: 200,
-        level: 0,
-        maxLevel: 10,
-        clickBoost: 0,
-        autoClickBoost: 1
-      },
-      {
-        name: 'Super Sifon',
-        baseCost: 1000,
-        level: 0,
-        maxLevel: 5,
-        clickBoost: 5,
-        autoClickBoost: 5
-      },
-      {
-        name: 'Nano Sifonator',
-        baseCost: 5000,
-        level: 0,
-        maxLevel: 3,
-        clickBoost: 20,
-        autoClickBoost: 20
-      },
-      {
-        name: 'Boost Carbonatare',
-        baseCost: 20000,
-        level: 0,
-        maxLevel: 1,
-        clickBoost: 0,
-        autoClickBoost: 0,
-        boost: true
-      }
+      { id: 'cursor', name: 'Sifon x2', description: 'Crește 0.1 carbonatari per click', cost: 15, cps: 0, clickBonus: 0.1, level: 0 },
+      { id: 'grandma', name: 'Sifonar automat', description: 'Produce 1 carbonatar pe secundă', cost: 100, cps: 1, clickBonus: 0, level: 0 },
+      { id: 'farm', name: 'Fabrica de sifoane', description: 'Produce 5 carbonatari pe secundă', cost: 500, cps: 5, clickBonus: 0, level: 0 },
+      { id: 'mine', name: 'Lupa', description: 'Produce 10 carbonatari pe secundă', cost: 2000, cps: 10, clickBonus: 0, level: 0 },
+      { id: 'factory', name: "Lupa's Factory", description: 'Produce 20 carbonatari pe secundă', cost: 7000, cps: 20, clickBonus: 0, level: 0 },
     ];
 
-    function getUpgradeCost(upgrade) {
-      return Math.floor(upgrade.baseCost * Math.pow(1.15, upgrade.level));
+    function updateScoreDisplay() {
+      scoreDisplay.textContent = Math.floor(score);
+      multiplierDisplay.textContent = `Multiplicator total: x${prestigeMultiplier.toFixed(2)}`;
     }
 
-    function getClickValue() {
-      let baseClick = 1;
-      upgrades.forEach(u => {
-        baseClick += u.clickBoost * u.level;
-      });
-      if(boostActive) baseClick *= 2;
-      baseClick *= prestigeMultiplier;
-      return baseClick;
-    }
-
-    function getAutoClickers() {
-      let autoClicks = 0;
-      upgrades.forEach(u => {
-        autoClicks += u.autoClickBoost * u.level;
-      });
-      if(boostActive) autoClicks *= 2;
-      autoClicks *= prestigeMultiplier;
-      return autoClicks;
-    }
-
-    function renderUpgrades() {
+    function updateUpgrades() {
       upgradesDiv.innerHTML = '';
-      upgrades.forEach(upgrade => {
+      upgrades.forEach(upg => {
         const btn = document.createElement('button');
         btn.className = 'upgrade';
-        btn.textContent = `${upgrade.name} (Nivel: ${upgrade.level}/${upgrade.maxLevel}) - Cost: ${getUpgradeCost(upgrade)}`;
-        btn.disabled = score < getUpgradeCost(upgrade) || upgrade.level >= upgrade.maxLevel;
-        btn.addEventListener('click', () => buyUpgrade(upgrade));
+        btn.textContent = `${upg.name} (Nivel: ${upg.level}) - Cost: ${upg.cost}`;
+        btn.title = upg.description + ` (Nivel: ${upg.level})`;
+        btn.disabled = score < upg.cost;
+        btn.addEventListener('click', () => {
+          if (score >= upg.cost) {
+            score -= upg.cost;
+            upg.level++;
+            upg.cost = Math.floor(upg.cost * 1.15);
+            updateEffects();
+            upgradeSound.currentTime = 0;
+            upgradeSound.play();
+            updateScoreDisplay();
+            updateUpgrades();
+            checkPrestige();
+          }
+        });
         upgradesDiv.appendChild(btn);
       });
     }
 
-    function buyUpgrade(upgrade) {
-      const cost = getUpgradeCost(upgrade);
-      if(score >= cost && upgrade.level < upgrade.maxLevel) {
-        score -= cost;
-        upgrade.level++;
-        updateDisplay();
-
-        if(soundOn) {
-          upgradeSound.currentTime = 0;
-          upgradeSound.play();
+    function updateEffects() {
+      prestigeMultiplier = 1;
+      upgrades.forEach(u => {
+        if (u.clickBonus) {
+          prestigeMultiplier += u.clickBonus * u.level;
         }
-
-        if(upgrade.boost && upgrade.level === 1) {
-          activateBoost();
-        }
-      }
+      });
     }
 
-    function updateDisplay() {
-      scoreDisplay.textContent = Math.floor(score);
-      multiplierDisplay.textContent = `Multiplicator total: x${prestigeMultiplier.toFixed(2)}`;
-      renderUpgrades();
+    function checkPrestige() {
       prestigeBtn.disabled = score < 10000;
-
-      clearTimeout(updateDisplay.messageTimeout);
-      updateDisplay.messageTimeout = setTimeout(() => {
-        message.textContent = '';
-      }, 3000);
     }
 
-    function activateBoost() {
-      if(boostActive) return;
-      boostActive = true;
-      message.textContent = 'Boost activat pentru 30s!';
-      setTimeout(() => {
-        boostActive = false;
-        message.textContent = 'Boost terminat.';
-      }, 30000);
+    sifon.addEventListener('click', () => {
+      const baseClick = 1;
+      const clickValue = baseClick * prestigeMultiplier;
+      score += clickValue;
+      if (soundOn) {
+        clickSound.currentTime = 0;
+        clickSound.play();
+      }
+      sifon.classList.add('clicked');
+      setTimeout(() => sifon.classList.remove('clicked'), 150);
+      updateScoreDisplay();
+      updateUpgrades();
+      checkPrestige();
+    });
+
+    function addAutoClicks() {
+      let totalCPS = 0;
+      upgrades.forEach(upg => {
+        totalCPS += upg.cps * upg.level;
+      });
+      return totalCPS * prestigeMultiplier;
     }
+
+    setInterval(() => {
+      const autoClicks = addAutoClicks();
+      if (autoClicks > 0) {
+        score += autoClicks;
+        updateScoreDisplay();
+        updateUpgrades();
+        checkPrestige();
+      }
+    }, 1000);
 
     prestigeBtn.addEventListener('click', () => {
-      if(score >= 10000) {
-        prestigeMultiplier += 0.5;
+      if (score >= 10000) {
         score = 0;
-        upgrades.forEach(u => u.level = 0);
-        boostActive = false;
-        message.textContent = 'Prestige activat! Multiplicator crescut.';
-        updateDisplay();
-
-        if(soundOn) {
-          prestigeSound.currentTime = 0;
-          prestigeSound.play();
-        }
+        prestigeMultiplier = 1;
+        upgrades.forEach(u => {
+          u.level = 0;
+          u.cost = u.id === 'cursor' ? 15 :
+                   u.id === 'grandma' ? 100 :
+                   u.id === 'farm' ? 500 :
+                   u.id === 'mine' ? 2000 :
+                   7000;
+        });
+        prestigeSound.currentTime = 0;
+        prestigeSound.play();
+        updateScoreDisplay();
+        updateUpgrades();
+        checkPrestige();
+        message.textContent = "Prestige activat! Succes!";
+        setTimeout(() => { message.textContent = ''; }, 3000);
       }
     });
 
     fullscreenBtn.addEventListener('click', () => {
-      if(!document.fullscreenElement) {
+      if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen();
       } else {
         document.exitFullscreen();
@@ -327,53 +300,34 @@
     volumeBtn.addEventListener('click', () => {
       soundOn = !soundOn;
       volumeBtn.textContent = `Sunet: ${soundOn ? 'On' : 'Off'}`;
-      if(!soundOn) {
+      if (!soundOn) {
         clickSound.pause();
         upgradeSound.pause();
         prestigeSound.pause();
+        bgMusic.pause();
+      } else {
+        bgMusic.play();
       }
     });
 
     volumeSlider.addEventListener('input', () => {
-      clickSound.volume = volumeSlider.value;
-      upgradeSound.volume = volumeSlider.value;
-      prestigeSound.volume = volumeSlider.value;
-      if(!soundOn) {
+      const vol = volumeSlider.value;
+      clickSound.volume = vol;
+      upgradeSound.volume = vol;
+      prestigeSound.volume = vol;
+      bgMusic.volume = vol;
+      if (!soundOn) {
         clickSound.volume = 0;
         upgradeSound.volume = 0;
         prestigeSound.volume = 0;
+        bgMusic.volume = 0;
       }
     });
 
-    sifon.addEventListener('click', () => {
-      let clickValue = getClickValue();
-      score += clickValue;
-      updateDisplay();
-      message.textContent = `Ai sifonat +${clickValue.toFixed(2)}!`;
-
-      sifon.classList.add('clicked');
-      setTimeout(() => {
-        sifon.classList.remove('clicked');
-      }, 150);
-
-      if(soundOn) {
-        clickSound.currentTime = 0;
-        clickSound.play();
-      }
-    });
-
-    // Auto clicker la fiecare secundă
-    setInterval(() => {
-      let autoClicks = getAutoClickers();
-      if(autoClicks > 0) {
-        score += autoClicks;
-        updateDisplay();
-        message.textContent = `Auto-sifonare +${autoClicks.toFixed(2)}`;
-      }
-    }, 1000);
-
-    // Initial render
-    updateDisplay();
+    // Init
+    updateScoreDisplay();
+    updateUpgrades();
+    checkPrestige();
   </script>
 </body>
 </html>
