@@ -186,9 +186,8 @@
     <button id="fullscreenBtn">Fullscreen</button>
     <button id="volumeBtn">Sunet: On</button>
     
-    <button id="saveBtn">Salvează Jocul</button>
-    <button id="loadBtn">Încarcă Jocul</button>
-    <input type="file" id="loadFile" accept=".json" style="display: none;">
+    <button id="saveBtn">Salvează Manual</button>
+    <button id="loadBtn">Reîncarcă Progres</button>
     <button id="resetBtn">Resetează Tot</button>
     <div id="saveStatus"></div>
 
@@ -230,7 +229,6 @@
     const sifon = document.getElementById('sifon');
     const saveBtn = document.getElementById('saveBtn');
     const loadBtn = document.getElementById('loadBtn');
-    const loadFile = document.getElementById('loadFile');
     const resetBtn = document.getElementById('resetBtn');
     const saveStatus = document.getElementById('saveStatus');
 
@@ -259,6 +257,28 @@
       { id: 'quantum', name: 'Sifon cuantic', description: 'Crește click-ul cu 5', cost: 500000, cps: 0, clickBonus: 5, level: 0 }
     ];
 
+    // Cookie helper functions
+    function setCookie(name, value, days) {
+      const expires = new Date();
+      expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+      document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/`;
+    }
+
+    function getCookie(name) {
+      const nameEQ = name + "=";
+      const ca = document.cookie.split(';');
+      for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) === 0) return decodeURIComponent(c.substring(nameEQ.length, c.length));
+      }
+      return null;
+    }
+
+    function deleteCookie(name) {
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+    }
+
     // Save game functions
     function saveGame() {
       const gameData = {
@@ -276,85 +296,62 @@
         saveDate: new Date().toISOString()
       };
       
-      // Save to memory and also generate export data
-      window.sifonSaveData = gameData;
+      // Save to browser cookie (expires in 365 days)
+      setCookie('sifonClickerSave', JSON.stringify(gameData), 365);
       
-      // Create a downloadable save file
-      const saveString = JSON.stringify(gameData, null, 2);
-      const blob = new Blob([saveString], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      
-      // Auto-download save file
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `sifon-save-${new Date().toISOString().split('T')[0]}.json`;
-      a.style.display = 'none';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      
-      saveStatus.textContent = 'Joc salvat! Fișier descărcat.';
-      setTimeout(() => { saveStatus.textContent = ''; }, 3000);
+      saveStatus.textContent = 'Joc salvat automat!';
+      setTimeout(() => { saveStatus.textContent = ''; }, 2000);
     }
 
     function loadGame() {
-      // Trigger file input
-      loadFile.click();
-    }
-
-    // Handle file loading
-    loadFile.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          try {
-            const data = JSON.parse(event.target.result);
-            
-            score = data.score || 0;
-            prestigePoints = data.prestigePoints || 0;
-            prestigeMultiplier = data.prestigeMultiplier || 1;
-            totalClicks = data.totalClicks || 0;
-            soundOn = data.soundOn !== undefined ? data.soundOn : true;
-            
-            if (data.volume !== undefined) {
-              volumeSlider.value = data.volume;
-              clickSound.volume = data.volume;
-              upgradeSound.volume = data.volume;
-              prestigeSound.volume = data.volume;
-              bgMusic.volume = data.volume;
-            }
-            
-            if (data.upgrades) {
-              data.upgrades.forEach(savedUpgrade => {
-                const upgrade = upgrades.find(u => u.id === savedUpgrade.id);
-                if (upgrade) {
-                  upgrade.level = savedUpgrade.level || 0;
-                  upgrade.cost = savedUpgrade.cost || upgrade.cost;
-                }
-              });
-            }
-            
-            volumeBtn.textContent = soundOn ? 'Sunet: On' : 'Sunet: Off';
-            
-            updateScoreDisplay();
-            updateUpgrades();
-            checkPrestige();
-            updateLeftPanel();
-            
-            saveStatus.textContent = 'Joc încărcat cu succes!';
-            setTimeout(() => { saveStatus.textContent = ''; }, 3000);
-          } catch (error) {
-            saveStatus.textContent = 'Eroare la încărcarea fișierului!';
-            setTimeout(() => { saveStatus.textContent = ''; }, 3000);
+      const savedData = getCookie('sifonClickerSave');
+      if (savedData) {
+        try {
+          const data = JSON.parse(savedData);
+          
+          score = data.score || 0;
+          prestigePoints = data.prestigePoints || 0;
+          prestigeMultiplier = data.prestigeMultiplier || 1;
+          totalClicks = data.totalClicks || 0;
+          soundOn = data.soundOn !== undefined ? data.soundOn : true;
+          
+          if (data.volume !== undefined) {
+            volumeSlider.value = data.volume;
+            clickSound.volume = data.volume;
+            upgradeSound.volume = data.volume;
+            prestigeSound.volume = data.volume;
+            bgMusic.volume = data.volume;
           }
-        };
-        reader.readAsText(file);
+          
+          if (data.upgrades) {
+            data.upgrades.forEach(savedUpgrade => {
+              const upgrade = upgrades.find(u => u.id === savedUpgrade.id);
+              if (upgrade) {
+                upgrade.level = savedUpgrade.level || 0;
+                upgrade.cost = savedUpgrade.cost || upgrade.cost;
+              }
+            });
+          }
+          
+          volumeBtn.textContent = soundOn ? 'Sunet: On' : 'Sunet: Off';
+          
+          updateScoreDisplay();
+          updateUpgrades();
+          checkPrestige();
+          updateLeftPanel();
+          
+          saveStatus.textContent = 'Progres încărcat automat!';
+          setTimeout(() => { saveStatus.textContent = ''; }, 2000);
+          return true;
+        } catch (error) {
+          console.error('Error loading save:', error);
+          saveStatus.textContent = 'Eroare la încărcarea progresului!';
+          setTimeout(() => { saveStatus.textContent = ''; }, 2000);
+          return false;
+        }
       }
-      // Reset file input
-      loadFile.value = '';
-    });
+      return false;
+    }
 
     function resetGame() {
       if (confirm('Ești sigur că vrei să resetezi tot progresul? Această acțiune nu poate fi anulată!')) {
@@ -394,21 +391,21 @@
         clickBoostBtn.disabled = false;
         boostTimer.textContent = '';
         
-        // Clear saved data
-        window.sifonSaveData = null;
+        // Delete saved data from cookies
+        deleteCookie('sifonClickerSave');
         
         updateScoreDisplay();
         updateUpgrades();
         checkPrestige();
         updateLeftPanel();
         
-        saveStatus.textContent = 'Joc resetat!';
+        saveStatus.textContent = 'Joc resetat complet!';
         setTimeout(() => { saveStatus.textContent = ''; }, 2000);
       }
     }
 
-    // Auto-save every 30 seconds
-    setInterval(saveGame, 30000);
+    // Auto-save every 10 seconds (like Cookie Clicker)
+    setInterval(saveGame, 10000);
 
     // Save button
     saveBtn.addEventListener('click', saveGame);
@@ -597,7 +594,11 @@
 
     // Try to load saved game on startup
     window.addEventListener('load', () => {
-      loadGame();
+      if (!loadGame()) {
+        // If no save found, show welcome message
+        saveStatus.textContent = 'Bun venit la Sifon Clicker!';
+        setTimeout(() => { saveStatus.textContent = ''; }, 3000);
+      }
     });
 
     // Save before closing
