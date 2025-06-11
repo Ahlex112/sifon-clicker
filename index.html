@@ -22,6 +22,22 @@
       user-select: none;
       line-height: 1.5;
     }
+    #leftPanel, #rightPanel {
+      width: 200px;
+      background: rgba(0,0,0,0.5);
+      border-radius: 15px;
+      padding: 20px;
+      color: #0f0;
+      font-family: 'Segoe UI', sans-serif;
+      font-weight: 600;
+      user-select: none;
+      height: 600px;
+      overflow-y: auto;
+      box-shadow: 0 0 20px #00ff00aa;
+    }
+    #rightPanel {
+      box-shadow: 0 0 20px #00ffffaa;
+    }
     #game {
       text-align: center;
       margin-top: 40px;
@@ -30,13 +46,14 @@
       padding: 20px 30px;
       border-radius: 15px;
       box-shadow: 0 0 30px #00ffccaa;
+      user-select: none;
     }
     #sifon {
       width: 200px;
       height: 200px;
       background: url('sifon mic.png') no-repeat center/contain;
       cursor: pointer;
-      border: none; /* Eliminat bordura */
+      border: none;
       transition: transform 0.1s;
       margin: 0 auto 20px;
       position: relative;
@@ -135,6 +152,14 @@
   </style>
 </head>
 <body>
+  <div id="leftPanel">
+    <h2>Statistici</h2>
+    <p>Total Carbonatari: 0</p>
+    <p>Total Click-uri: 0</p>
+    <p>Upgrade-uri cumpărate: 0</p>
+    <p>Puncte Prestige: 0</p>
+  </div>
+
   <div id="game">
     <h1>Sifon Clicker</h1>
     <div id="sifon"></div>
@@ -158,10 +183,21 @@
     <audio id="bgMusic" src="rat dance.mp3" loop preload="auto"></audio>
   </div>
 
+  <div id="rightPanel">
+    <h2>Bonusuri</h2>
+    <button id="clickBoostBtn">Boost Click x5 (cost: 5000)</button>
+    <div id="boostTimer"></div>
+  </div>
+
   <script>
     let score = 0;
+    let prestigePoints = 0;
     let prestigeMultiplier = 1;
     let soundOn = true;
+    let totalClicks = 0;
+    let clickBoostActive = false;
+    let clickBoostMultiplier = 1;
+    let boostTimeout;
 
     const scoreDisplay = document.getElementById('score');
     const multiplierDisplay = document.querySelector('#multiplierDisplay');
@@ -172,6 +208,10 @@
     const volumeBtn = document.getElementById('volumeBtn');
     const volumeSlider = document.getElementById('volumeSlider');
     const sifon = document.getElementById('sifon');
+
+    const leftPanel = document.getElementById('leftPanel');
+    const clickBoostBtn = document.getElementById('clickBoostBtn');
+    const boostTimer = document.getElementById('boostTimer');
 
     const clickSound = document.getElementById('clickSound');
     const upgradeSound = document.getElementById('upgradeSound');
@@ -188,12 +228,28 @@
       { id: 'grandma', name: 'Sifonar automat', description: 'Produce 1 carbonatar pe secundă', cost: 100, cps: 1, clickBonus: 0, level: 0 },
       { id: 'farm', name: 'Fabrica de sifoane', description: 'Produce 5 carbonatari pe secundă', cost: 500, cps: 5, clickBonus: 0, level: 0 },
       { id: 'mine', name: 'Lupa', description: 'Produce 10 carbonatari pe secundă', cost: 2000, cps: 10, clickBonus: 0, level: 0 },
-      { id: 'factory', name: "Lupa's Factory", description: 'Produce 20 carbonatari pe secundă', cost: 7000, cps: 20, clickBonus: 0, level: 0 },
+      { id: 'factory', name: 'Fabrica Mare', description: 'Produce 50 carbonatari pe secundă', cost: 7000, cps: 50, clickBonus: 0, level: 0 },
+
+      // Extins
+      { id: 'lab', name: 'Laborator secret', description: 'Produce 50 carbonatari pe secundă', cost: 20000, cps: 50, clickBonus: 0, level: 0 },
+      { id: 'robot', name: 'Robot sifonator', description: 'Produce 100 carbonatari pe secundă', cost: 100000, cps: 100, clickBonus: 0, level: 0 },
+      { id: 'quantum', name: 'Sifon cuantic', description: 'Crește click-ul cu 5', cost: 500000, cps: 0, clickBonus: 5, level: 0 }
     ];
 
     function updateScoreDisplay() {
       scoreDisplay.textContent = Math.floor(score);
-      multiplierDisplay.textContent = `Multiplicator total: x${prestigeMultiplier.toFixed(2)}`;
+      multiplierDisplay.textContent = `Multiplicator total: x${(prestigeMultiplier).toFixed(2)}`;
+    }
+
+    function updateLeftPanel() {
+      const totalUpgrades = upgrades.reduce((sum, u) => sum + u.level, 0);
+      leftPanel.innerHTML = `
+        <h2>Statistici</h2>
+        <p>Total Carbonatari: ${Math.floor(score)}</p>
+        <p>Total Click-uri: ${totalClicks}</p>
+        <p>Upgrade-uri cumpărate: ${totalUpgrades}</p>
+        <p>Puncte Prestige: ${prestigePoints}</p>
+      `;
     }
 
     function updateUpgrades() {
@@ -201,42 +257,75 @@
       upgrades.forEach(upg => {
         const btn = document.createElement('button');
         btn.className = 'upgrade';
-        btn.textContent = `${upg.name} (Nivel: ${upg.level}) - Cost: ${upg.cost}`;
-        btn.title = upg.description + ` (Nivel: ${upg.level})`;
+        btn.textContent = `${upg.name} (Cost: ${upg.cost})\n${upg.description}\nNivel: ${upg.level}`;
         btn.disabled = score < upg.cost;
+        btn.title = `${upg.description}`;
         btn.addEventListener('click', () => {
           if (score >= upg.cost) {
             score -= upg.cost;
             upg.level++;
+            // Costul crește cu 15% la fiecare nivel
             upg.cost = Math.floor(upg.cost * 1.15);
-            updateEffects();
-            upgradeSound.currentTime = 0;
-            upgradeSound.play();
+            if (soundOn) {
+              upgradeSound.currentTime = 0;
+              upgradeSound.play();
+            }
             updateScoreDisplay();
             updateUpgrades();
             checkPrestige();
+            updateLeftPanel();
           }
         });
         upgradesDiv.appendChild(btn);
       });
     }
 
-    function updateEffects() {
-      prestigeMultiplier = 1;
-      upgrades.forEach(u => {
-        if (u.clickBonus) {
-          prestigeMultiplier += u.clickBonus * u.level;
-        }
-      });
+    function calculateCPS() {
+      return upgrades.reduce((sum, u) => sum + (u.cps * u.level), 0);
+    }
+
+    function calculateClickBonus() {
+      return upgrades.reduce((sum, u) => sum + (u.clickBonus * u.level), 0);
     }
 
     function checkPrestige() {
       prestigeBtn.disabled = score < 10000;
     }
 
+    prestigeBtn.addEventListener('click', () => {
+      if (score >= 10000) {
+        prestigePoints++;
+        prestigeMultiplier = 1 + prestigePoints * 0.5;
+        score = 0;
+        upgrades.forEach(u => {
+          u.level = 0;
+          // Reset costuri
+          if (u.id === 'cursor') u.cost = 15;
+          else if (u.id === 'grandma') u.cost = 100;
+          else if (u.id === 'farm') u.cost = 500;
+          else if (u.id === 'mine') u.cost = 2000;
+          else if (u.id === 'factory') u.cost = 7000;
+          else if (u.id === 'lab') u.cost = 20000;
+          else if (u.id === 'robot') u.cost = 100000;
+          else if (u.id === 'quantum') u.cost = 500000;
+        });
+        if (soundOn) {
+          prestigeSound.currentTime = 0;
+          prestigeSound.play();
+        }
+        updateScoreDisplay();
+        updateUpgrades();
+        checkPrestige();
+        updateLeftPanel();
+        message.textContent = `Prestige activat! Ai ${prestigePoints} puncte prestige. Multiplicator: x${prestigeMultiplier.toFixed(2)}`;
+        setTimeout(() => { message.textContent = ''; }, 4000);
+      }
+    });
+
     sifon.addEventListener('click', () => {
+      totalClicks++;
       const baseClick = 1;
-      const clickValue = baseClick * prestigeMultiplier;
+      const clickValue = (baseClick + calculateClickBonus()) * prestigeMultiplier * clickBoostMultiplier;
       score += clickValue;
       if (soundOn) {
         clickSound.currentTime = 0;
@@ -247,65 +336,37 @@
       updateScoreDisplay();
       updateUpgrades();
       checkPrestige();
+      updateLeftPanel();
     });
 
-    function addAutoClicks() {
-      let totalCPS = 0;
-      upgrades.forEach(upg => {
-        totalCPS += upg.cps * upg.level;
-      });
-      return totalCPS * prestigeMultiplier;
-    }
-
+    // Automat - crește scorul pe secundă
     setInterval(() => {
-      const autoClicks = addAutoClicks();
-      if (autoClicks > 0) {
-        score += autoClicks;
-        updateScoreDisplay();
-        updateUpgrades();
-        checkPrestige();
-      }
+      const cps = calculateCPS() * prestigeMultiplier;
+      score += cps;
+      updateScoreDisplay();
+      updateUpgrades();
+      checkPrestige();
+      updateLeftPanel();
     }, 1000);
-
-    prestigeBtn.addEventListener('click', () => {
-      if (score >= 10000) {
-        score = 0;
-        prestigeMultiplier = 1;
-        upgrades.forEach(u => {
-          u.level = 0;
-          u.cost = u.id === 'cursor' ? 15 :
-                   u.id === 'grandma' ? 100 :
-                   u.id === 'farm' ? 500 :
-                   u.id === 'mine' ? 2000 :
-                   7000;
-        });
-        prestigeSound.currentTime = 0;
-        prestigeSound.play();
-        updateScoreDisplay();
-        updateUpgrades();
-        checkPrestige();
-        message.textContent = "Prestige activat! Succes!";
-        setTimeout(() => { message.textContent = ''; }, 3000);
-      }
-    });
 
     fullscreenBtn.addEventListener('click', () => {
       if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen();
       } else {
-        document.exitFullscreen();
+        if (document.exitFullscreen) document.exitFullscreen();
       }
     });
 
     volumeBtn.addEventListener('click', () => {
       soundOn = !soundOn;
-      volumeBtn.textContent = `Sunet: ${soundOn ? 'On' : 'Off'}`;
       if (!soundOn) {
         clickSound.pause();
         upgradeSound.pause();
         prestigeSound.pause();
         bgMusic.pause();
+        volumeBtn.textContent = 'Sunet: Off';
       } else {
+        volumeBtn.textContent = 'Sunet: On';
         bgMusic.play();
       }
     });
@@ -316,11 +377,36 @@
       upgradeSound.volume = vol;
       prestigeSound.volume = vol;
       bgMusic.volume = vol;
-      if (!soundOn) {
-        clickSound.volume = 0;
-        upgradeSound.volume = 0;
-        prestigeSound.volume = 0;
-        bgMusic.volume = 0;
+    });
+
+    // Boost click temporar
+    clickBoostBtn.addEventListener('click', () => {
+      if (score >= 5000 && !clickBoostActive) {
+        score -= 5000;
+        clickBoostMultiplier = 5;
+        clickBoostActive = true;
+        updateScoreDisplay();
+        updateUpgrades();
+        checkPrestige();
+        updateLeftPanel();
+        message.textContent = 'Boost Click activat pentru 30 secunde!';
+        clickBoostBtn.disabled = true;
+
+        let timeLeft = 30;
+        boostTimer.textContent = `Timp rămas: ${timeLeft}s`;
+
+        boostTimeout = setInterval(() => {
+          timeLeft--;
+          boostTimer.textContent = `Timp rămas: ${timeLeft}s`;
+          if (timeLeft <= 0) {
+            clearInterval(boostTimeout);
+            clickBoostActive = false;
+            clickBoostMultiplier = 1;
+            boostTimer.textContent = '';
+            clickBoostBtn.disabled = false;
+            message.textContent = 'Boost Click terminat.';
+          }
+        }, 1000);
       }
     });
 
@@ -328,6 +414,7 @@
     updateScoreDisplay();
     updateUpgrades();
     checkPrestige();
+    updateLeftPanel();
   </script>
 </body>
 </html>
