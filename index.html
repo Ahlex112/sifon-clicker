@@ -206,6 +206,11 @@
     <h2>Bonusuri</h2>
     <button id="clickBoostBtn">Boost Click x5 (cost: 5000)</button>
     <div id="boostTimer"></div>
+    
+    <div id="cosmeticsSection">
+      <h3>Cosmetice</h3>
+      <div id="cosmeticsDiv"></div>
+    </div>
   </div>
 
   <script>
@@ -217,6 +222,7 @@
     let clickBoostActive = false;
     let clickBoostMultiplier = 1;
     let boostTimeout;
+    let coconutUnlocked = false;
 
     const scoreDisplay = document.getElementById('score');
     const multiplierDisplay = document.querySelector('#multiplierDisplay');
@@ -235,6 +241,7 @@
     const leftPanel = document.getElementById('leftPanel');
     const clickBoostBtn = document.getElementById('clickBoostBtn');
     const boostTimer = document.getElementById('boostTimer');
+    const cosmeticsDiv = document.getElementById('cosmeticsDiv');
 
     const clickSound = document.getElementById('clickSound');
     const upgradeSound = document.getElementById('upgradeSound');
@@ -255,6 +262,10 @@
       { id: 'lab', name: 'Laborator secret', description: 'Produce 50 carbonatari pe secundă', cost: 20000, cps: 50, clickBonus: 0, level: 0 },
       { id: 'robot', name: 'Robot sifonator', description: 'Produce 100 carbonatari pe secundă', cost: 100000, cps: 100, clickBonus: 0, level: 0 },
       { id: 'quantum', name: 'Sifon cuantic', description: 'Crește click-ul cu 5', cost: 500000, cps: 0, clickBonus: 5, level: 0 }
+    ];
+
+    const cosmetics = [
+      { id: 'coconut', name: 'Coconut Special', description: 'Schimbă sifonul într-un coconut special!', cost: 1000, unlocked: false, image: 'coconut.png' }
     ];
 
     // Cookie helper functions
@@ -288,6 +299,7 @@
         totalClicks: totalClicks,
         soundOn: soundOn,
         volume: volumeSlider.value,
+        coconutUnlocked: coconutUnlocked,
         upgrades: upgrades.map(u => ({
           id: u.id,
           level: u.level,
@@ -314,6 +326,7 @@
           prestigeMultiplier = data.prestigeMultiplier || 1;
           totalClicks = data.totalClicks || 0;
           soundOn = data.soundOn !== undefined ? data.soundOn : true;
+          coconutUnlocked = data.coconutUnlocked || false;
           
           if (data.volume !== undefined) {
             volumeSlider.value = data.volume;
@@ -337,6 +350,8 @@
           
           updateScoreDisplay();
           updateUpgrades();
+          updateCosmetics();
+          updateSifonImage();
           checkPrestige();
           updateLeftPanel();
           
@@ -362,6 +377,7 @@
         soundOn = true;
         clickBoostActive = false;
         clickBoostMultiplier = 1;
+        coconutUnlocked = false;
         
         if (boostTimeout) {
           clearInterval(boostTimeout);
@@ -396,6 +412,8 @@
         
         updateScoreDisplay();
         updateUpgrades();
+        updateCosmetics();
+        updateSifonImage();
         checkPrestige();
         updateLeftPanel();
         
@@ -452,6 +470,7 @@
             }
             updateScoreDisplay();
             updateUpgrades();
+            updateCosmetics();
             checkPrestige();
             updateLeftPanel();
             saveGame(); // Auto-save after upgrade
@@ -459,6 +478,51 @@
         });
         upgradesDiv.appendChild(btn);
       });
+    }
+
+    function updateCosmetics() {
+      cosmeticsDiv.innerHTML = '';
+      cosmetics.forEach(cosmetic => {
+        const btn = document.createElement('button');
+        btn.className = 'cosmetic';
+        
+        if (cosmetic.id === 'coconut' && coconutUnlocked) {
+          btn.textContent = `${cosmetic.name} - CUMPĂRAT ✓`;
+          btn.className += ' owned';
+          btn.disabled = true;
+        } else {
+          btn.textContent = `${cosmetic.name} (Cost: ${cosmetic.cost})\n${cosmetic.description}`;
+          btn.disabled = score < cosmetic.cost;
+          btn.addEventListener('click', () => {
+            if (score >= cosmetic.cost && !coconutUnlocked) {
+              score -= cosmetic.cost;
+              coconutUnlocked = true;
+              if (soundOn) {
+                upgradeSound.currentTime = 0;
+                upgradeSound.play();
+              }
+              updateSifonImage();
+              updateScoreDisplay();
+              updateUpgrades();
+              updateCosmetics();
+              checkPrestige();
+              updateLeftPanel();
+              saveGame();
+              message.textContent = 'Coconut cumpărat! Sifonul s-a transformat!';
+              setTimeout(() => { message.textContent = ''; }, 4000);
+            }
+          });
+        }
+        cosmeticsDiv.appendChild(btn);
+      });
+    }
+
+    function updateSifonImage() {
+      if (coconutUnlocked) {
+        sifon.style.backgroundImage = "url('coconut.png')";
+      } else {
+        sifon.style.backgroundImage = "url('sifon mic.png')";
+      }
     }
 
     function calculateCPS() {
@@ -496,6 +560,8 @@
         }
         updateScoreDisplay();
         updateUpgrades();
+        updateCosmetics();
+        updateSifonImage();
         checkPrestige();
         updateLeftPanel();
         saveGame(); // Auto-save after prestige
@@ -517,6 +583,7 @@
       setTimeout(() => sifon.classList.remove('clicked'), 150);
       updateScoreDisplay();
       updateUpgrades();
+      updateCosmetics();
       checkPrestige();
       updateLeftPanel();
     });
@@ -527,6 +594,7 @@
       score += cps;
       updateScoreDisplay();
       updateUpgrades();
+      updateCosmetics();
       checkPrestige();
       updateLeftPanel();
     }, 1000);
@@ -569,6 +637,7 @@
         clickBoostActive = true;
         updateScoreDisplay();
         updateUpgrades();
+        updateCosmetics();
         checkPrestige();
         updateLeftPanel();
         message.textContent = 'Boost Click activat pentru 30 secunde!';
@@ -609,6 +678,8 @@
     // Init
     updateScoreDisplay();
     updateUpgrades();
+    updateCosmetics();
+    updateSifonImage();
     checkPrestige();
     updateLeftPanel();
   </script>
