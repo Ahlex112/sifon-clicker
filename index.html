@@ -416,5 +416,221 @@
     checkPrestige();
     updateLeftPanel();
   </script>
+  <script>
+  let score = 0;
+  let prestigeMultiplier = 1;
+  let soundOn = true;
+
+  const scoreDisplay = document.getElementById('score');
+  const multiplierDisplay = document.querySelector('#multiplierDisplay');
+  const message = document.getElementById('message');
+  const upgradesDiv = document.getElementById('upgrades');
+  const prestigeBtn = document.getElementById('prestigeBtn');
+  const fullscreenBtn = document.getElementById('fullscreenBtn');
+  const volumeBtn = document.getElementById('volumeBtn');
+  const volumeSlider = document.getElementById('volumeSlider');
+  const sifon = document.getElementById('sifon');
+
+  const clickSound = document.getElementById('clickSound');
+  const upgradeSound = document.getElementById('upgradeSound');
+  const prestigeSound = document.getElementById('prestigeSound');
+  const bgMusic = document.getElementById('bgMusic');
+  bgMusic.volume = volumeSlider.value;
+
+  // Încarcă datele salvate din localStorage (dacă există)
+  function loadGame() {
+    const saved = localStorage.getItem('sifonClickerSave');
+    if (saved) {
+      const data = JSON.parse(saved);
+      score = data.score || 0;
+      prestigeMultiplier = data.prestigeMultiplier || 1;
+      soundOn = data.soundOn !== undefined ? data.soundOn : true;
+      volumeSlider.value = data.volume || 1;
+      upgrades.forEach(u => {
+        u.level = data.upgrades[u.id]?.level || 0;
+        u.cost = data.upgrades[u.id]?.cost || u.cost;
+      });
+    }
+  }
+
+  // Salvează datele în localStorage
+  function saveGame() {
+    const data = {
+      score,
+      prestigeMultiplier,
+      soundOn,
+      volume: volumeSlider.value,
+      upgrades: {}
+    };
+    upgrades.forEach(u => {
+      data.upgrades[u.id] = {
+        level: u.level,
+        cost: u.cost
+      };
+    });
+    localStorage.setItem('sifonClickerSave', JSON.stringify(data));
+  }
+
+  document.body.addEventListener('click', () => {
+    if (soundOn && bgMusic.paused) bgMusic.play();
+  }, { once: true });
+
+  const upgrades = [
+    { id: 'cursor', name: 'Sifon x2', description: 'Crește 0.1 carbonatari per click', cost: 15, cps: 0, clickBonus: 0.1, level: 0 },
+    { id: 'grandma', name: 'Sifonar automat', description: 'Produce 1 carbonatar pe secundă', cost: 100, cps: 1, clickBonus: 0, level: 0 },
+    { id: 'farm', name: 'Fabrica de sifoane', description: 'Produce 5 carbonatari pe secundă', cost: 500, cps: 5, clickBonus: 0, level: 0 },
+    { id: 'mine', name: 'Lupa', description: 'Produce 10 carbonatari pe secundă', cost: 2000, cps: 10, clickBonus: 0, level: 0 },
+    { id: 'factory', name: "Lupa's Factory", description: 'Produce 20 carbonatari pe secundă', cost: 7000, cps: 20, clickBonus: 0, level: 0 },
+    { id: 'lab', name: 'Laborator de cercetare', description: 'Crește multiplicatorul de click cu 0.5', cost: 15000, cps: 0, clickBonus: 0.5, level: 0 },
+    { id: 'rocket', name: 'Rachetă carbonată', description: 'Produce 50 carbonatari pe secundă', cost: 30000, cps: 50, clickBonus: 0, level: 0 },
+  ];
+
+  function updateScoreDisplay() {
+    scoreDisplay.textContent = Math.floor(score);
+    multiplierDisplay.textContent = `Multiplicator total: x${prestigeMultiplier.toFixed(2)}`;
+  }
+
+  function updateUpgrades() {
+    upgradesDiv.innerHTML = '';
+    upgrades.forEach(upg => {
+      const btn = document.createElement('button');
+      btn.className = 'upgrade';
+      btn.textContent = `${upg.name} (Nivel: ${upg.level}) - Cost: ${upg.cost}`;
+      btn.title = upg.description + ` (Nivel: ${upg.level})`;
+      btn.disabled = score < upg.cost;
+      btn.addEventListener('click', () => {
+        if (score >= upg.cost) {
+          score -= upg.cost;
+          upg.level++;
+          upg.cost = Math.floor(upg.cost * 1.15);
+          updateEffects();
+          upgradeSound.currentTime = 0;
+          upgradeSound.play();
+          updateScoreDisplay();
+          updateUpgrades();
+          checkPrestige();
+          saveGame();  // Salvează după upgrade
+        }
+      });
+      upgradesDiv.appendChild(btn);
+    });
+  }
+
+  function updateEffects() {
+    prestigeMultiplier = 1;
+    upgrades.forEach(u => {
+      if (u.clickBonus) {
+        prestigeMultiplier += u.clickBonus * u.level;
+      }
+    });
+  }
+
+  function checkPrestige() {
+    prestigeBtn.disabled = score < 10000;
+  }
+
+  sifon.addEventListener('click', () => {
+    const baseClick = 1;
+    const clickValue = baseClick * prestigeMultiplier;
+    score += clickValue;
+    if (soundOn) {
+      clickSound.currentTime = 0;
+      clickSound.play();
+    }
+    sifon.classList.add('clicked');
+    setTimeout(() => sifon.classList.remove('clicked'), 150);
+    updateScoreDisplay();
+    updateUpgrades();
+    checkPrestige();
+    saveGame();  // Salvează după click
+  });
+
+  function addAutoClicks() {
+    let totalCPS = 0;
+    upgrades.forEach(upg => {
+      totalCPS += upg.cps * upg.level;
+    });
+    return totalCPS * prestigeMultiplier;
+  }
+
+  setInterval(() => {
+    const autoClicks = addAutoClicks();
+    if (autoClicks > 0) {
+      score += autoClicks;
+      updateScoreDisplay();
+      updateUpgrades();
+      checkPrestige();
+      saveGame(); // Salvează după autoclick
+    }
+  }, 1000);
+
+  prestigeBtn.addEventListener('click', () => {
+    if (score >= 10000) {
+      score = 0;
+      prestigeMultiplier = 1;
+      upgrades.forEach(u => {
+        u.level = 0;
+        u.cost = u.id === 'cursor' ? 15 :
+                 u.id === 'grandma' ? 100 :
+                 u.id === 'farm' ? 500 :
+                 u.id === 'mine' ? 2000 :
+                 u.id === 'factory' ? 7000 :
+                 u.id === 'lab' ? 15000 :
+                 30000;
+      });
+      prestigeSound.currentTime = 0;
+      prestigeSound.play();
+      updateScoreDisplay();
+      updateUpgrades();
+      checkPrestige();
+      message.textContent = "Prestige activat! Succes!";
+      setTimeout(() => { message.textContent = ''; }, 3000);
+      saveGame();  // Salvează după prestige
+    }
+  });
+
+  fullscreenBtn.addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  });
+
+  volumeBtn.addEventListener('click', () => {
+    soundOn = !soundOn;
+    volumeBtn.textContent = `Sunet: ${soundOn ? 'On' : 'Off'}`;
+    if (!soundOn) {
+      clickSound.pause();
+      upgradeSound.pause();
+      prestigeSound.pause();
+      bgMusic.pause();
+    } else {
+      bgMusic.play();
+    }
+    saveGame(); // Salvează schimbarea sunetului
+  });
+
+  volumeSlider.addEventListener('input', () => {
+    const vol = volumeSlider.value;
+    clickSound.volume = vol;
+    upgradeSound.volume = vol;
+    prestigeSound.volume = vol;
+    bgMusic.volume = vol;
+    if (!soundOn) {
+      clickSound.volume = 0;
+      upgradeSound.volume = 0;
+      prestigeSound.volume = 0;
+      bgMusic.volume = 0;
+    }
+    saveGame(); // Salvează volumul
+  });
+
+  // Inițializează jocul cu date salvate
+  loadGame();
+  updateScoreDisplay();
+  updateUpgrades();
+  checkPrestige();
+</script>
 </body>
 </html>
