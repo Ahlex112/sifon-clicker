@@ -188,6 +188,7 @@
     
     <button id="saveBtn">Salvează Jocul</button>
     <button id="loadBtn">Încarcă Jocul</button>
+    <input type="file" id="loadFile" accept=".json" style="display: none;">
     <button id="resetBtn">Resetează Tot</button>
     <div id="saveStatus"></div>
 
@@ -229,6 +230,7 @@
     const sifon = document.getElementById('sifon');
     const saveBtn = document.getElementById('saveBtn');
     const loadBtn = document.getElementById('loadBtn');
+    const loadFile = document.getElementById('loadFile');
     const resetBtn = document.getElementById('resetBtn');
     const saveStatus = document.getElementById('saveStatus');
 
@@ -274,55 +276,85 @@
         saveDate: new Date().toISOString()
       };
       
-      // Save to memory (since we can't use localStorage in artifacts)
+      // Save to memory and also generate export data
       window.sifonSaveData = gameData;
       
-      saveStatus.textContent = 'Joc salvat!';
-      setTimeout(() => { saveStatus.textContent = ''; }, 2000);
+      // Create a downloadable save file
+      const saveString = JSON.stringify(gameData, null, 2);
+      const blob = new Blob([saveString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      
+      // Auto-download save file
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `sifon-save-${new Date().toISOString().split('T')[0]}.json`;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      saveStatus.textContent = 'Joc salvat! Fișier descărcat.';
+      setTimeout(() => { saveStatus.textContent = ''; }, 3000);
     }
 
     function loadGame() {
-      if (window.sifonSaveData) {
-        const data = window.sifonSaveData;
-        
-        score = data.score || 0;
-        prestigePoints = data.prestigePoints || 0;
-        prestigeMultiplier = data.prestigeMultiplier || 1;
-        totalClicks = data.totalClicks || 0;
-        soundOn = data.soundOn !== undefined ? data.soundOn : true;
-        
-        if (data.volume !== undefined) {
-          volumeSlider.value = data.volume;
-          clickSound.volume = data.volume;
-          upgradeSound.volume = data.volume;
-          prestigeSound.volume = data.volume;
-          bgMusic.volume = data.volume;
-        }
-        
-        if (data.upgrades) {
-          data.upgrades.forEach(savedUpgrade => {
-            const upgrade = upgrades.find(u => u.id === savedUpgrade.id);
-            if (upgrade) {
-              upgrade.level = savedUpgrade.level || 0;
-              upgrade.cost = savedUpgrade.cost || upgrade.cost;
-            }
-          });
-        }
-        
-        volumeBtn.textContent = soundOn ? 'Sunet: On' : 'Sunet: Off';
-        
-        updateScoreDisplay();
-        updateUpgrades();
-        checkPrestige();
-        updateLeftPanel();
-        
-        saveStatus.textContent = 'Joc încărcat!';
-        setTimeout(() => { saveStatus.textContent = ''; }, 2000);
-      } else {
-        saveStatus.textContent = 'Nu există date salvate!';
-        setTimeout(() => { saveStatus.textContent = ''; }, 2000);
-      }
+      // Trigger file input
+      loadFile.click();
     }
+
+    // Handle file loading
+    loadFile.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const data = JSON.parse(event.target.result);
+            
+            score = data.score || 0;
+            prestigePoints = data.prestigePoints || 0;
+            prestigeMultiplier = data.prestigeMultiplier || 1;
+            totalClicks = data.totalClicks || 0;
+            soundOn = data.soundOn !== undefined ? data.soundOn : true;
+            
+            if (data.volume !== undefined) {
+              volumeSlider.value = data.volume;
+              clickSound.volume = data.volume;
+              upgradeSound.volume = data.volume;
+              prestigeSound.volume = data.volume;
+              bgMusic.volume = data.volume;
+            }
+            
+            if (data.upgrades) {
+              data.upgrades.forEach(savedUpgrade => {
+                const upgrade = upgrades.find(u => u.id === savedUpgrade.id);
+                if (upgrade) {
+                  upgrade.level = savedUpgrade.level || 0;
+                  upgrade.cost = savedUpgrade.cost || upgrade.cost;
+                }
+              });
+            }
+            
+            volumeBtn.textContent = soundOn ? 'Sunet: On' : 'Sunet: Off';
+            
+            updateScoreDisplay();
+            updateUpgrades();
+            checkPrestige();
+            updateLeftPanel();
+            
+            saveStatus.textContent = 'Joc încărcat cu succes!';
+            setTimeout(() => { saveStatus.textContent = ''; }, 3000);
+          } catch (error) {
+            saveStatus.textContent = 'Eroare la încărcarea fișierului!';
+            setTimeout(() => { saveStatus.textContent = ''; }, 3000);
+          }
+        };
+        reader.readAsText(file);
+      }
+      // Reset file input
+      loadFile.value = '';
+    });
 
     function resetGame() {
       if (confirm('Ești sigur că vrei să resetezi tot progresul? Această acțiune nu poate fi anulată!')) {
