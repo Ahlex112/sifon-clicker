@@ -23,7 +23,7 @@
       line-height: 1.5;
     }
     #leftPanel, #rightPanel {
-      width: 200px;
+      width: 220px;
       background: rgba(0,0,0,0.5);
       border-radius: 15px;
       padding: 20px;
@@ -31,7 +31,7 @@
       font-family: 'Segoe UI', sans-serif;
       font-weight: 600;
       user-select: none;
-      height: 600px;
+      height: 700px;
       overflow-y: auto;
       box-shadow: 0 0 20px #00ff00aa;
     }
@@ -41,7 +41,7 @@
     #game {
       text-align: center;
       margin-top: 40px;
-      width: 300px;
+      width: 320px;
       background: rgba(0, 0, 0, 0.6);
       padding: 20px 30px;
       border-radius: 15px;
@@ -65,6 +65,12 @@
       font-size: 24px;
       margin-bottom: 10px;
     }
+    #rateDisplay {
+      font-size: 14px;
+      color: #0ff;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
     #multiplierDisplay {
       font-size: 16px;
       color: #0ff;
@@ -83,7 +89,7 @@
       display: flex;
       flex-direction: column;
       margin-top: 40px;
-      max-width: 300px;
+      max-width: 320px;
       gap: 15px;
       color: #0f0;
     }
@@ -106,6 +112,14 @@
       border-color: #444;
       cursor: not-allowed;
       background-color: #111;
+    }
+    .special-upgrade {
+      background: #330066;
+      border-color: #9933ff;
+      color: #cc99ff;
+    }
+    .special-upgrade:hover:not(:disabled) {
+      background-color: #440088;
     }
     #prestigeBtn, #fullscreenBtn, #volumeBtn, #saveBtn, #loadBtn, #resetBtn {
       margin-top: 15px;
@@ -163,6 +177,134 @@
       margin-top: 10px;
       height: 15px;
     }
+    #cosmeticsSection {
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid #0ff;
+    }
+    .cosmetic {
+      background: #001122;
+      padding: 10px 12px;
+      border: 1px solid #0ff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.2s;
+      text-align: left;
+      line-height: 1.2;
+      margin-bottom: 8px;
+      color: #0ff;
+      font-size: 12px;
+    }
+    .cosmetic:hover:not(:disabled) {
+      background-color: #003344;
+    }
+    .cosmetic:disabled {
+      color: #444;
+      border-color: #333;
+      cursor: not-allowed;
+      background-color: #111;
+    }
+    .cosmetic.owned {
+      background-color: #004400;
+      border-color: #0f0;
+      color: #0f0;
+    }
+    #bonusesSection {
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid #0ff;
+    }
+    .bonus {
+      background: #220011;
+      padding: 10px 12px;
+      border: 1px solid #ff0099;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.2s;
+      text-align: left;
+      line-height: 1.2;
+      margin-bottom: 8px;
+      color: #ff0099;
+      font-size: 12px;
+    }
+    .bonus:hover:not(:disabled) {
+      background-color: #440022;
+    }
+    .bonus:disabled {
+      color: #444;
+      border-color: #333;
+      cursor: not-allowed;
+      background-color: #111;
+    }
+    #achievementsSection {
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid #0f0;
+    }
+    .achievement {
+      background: #002200;
+      padding: 8px 10px;
+      border: 1px solid #0f0;
+      border-radius: 6px;
+      margin-bottom: 6px;
+      font-size: 11px;
+      line-height: 1.2;
+    }
+    .achievement.unlocked {
+      background-color: #004400;
+      color: #00ff00;
+      border-color: #00ff00;
+    }
+    .achievement.locked {
+      background-color: #111;
+      color: #444;
+      border-color: #333;
+    }
+    #prestigeRewardsSection {
+      margin-top: 15px;
+      padding-top: 10px;
+      border-top: 1px solid #ff9900;
+    }
+    .prestige-reward {
+      background: #221100;
+      padding: 8px 10px;
+      border: 1px solid #ff9900;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.2s;
+      text-align: left;
+      line-height: 1.2;
+      margin-bottom: 6px;
+      color: #ff9900;
+      font-size: 11px;
+    }
+    .prestige-reward:hover:not(:disabled) {
+      background-color: #332200;
+    }
+    .prestige-reward:disabled {
+      color: #444;
+      border-color: #333;
+      cursor: not-allowed;
+      background-color: #111;
+    }
+    .prestige-reward.owned {
+      background-color: #443300;
+      border-color: #ffcc00;
+      color: #ffcc00;
+    }
+    h2, h3, h4 {
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+    h3 {
+      font-size: 14px;
+    }
+    h4 {
+      font-size: 12px;
+    }
   </style>
 </head>
 <body>
@@ -172,12 +314,27 @@
     <p>Total Click-uri: 0</p>
     <p>Upgrade-uri cumpărate: 0</p>
     <p>Puncte Prestige: 0</p>
+    <p>Timp jucat: 0m</p>
+    <p>Cel mai mare CPS: 0</p>
+    <p>Cel mai scump upgrade: 0</p>
+    <p>Prestige-uri: 0</p>
+    
+    <div id="achievementsSection">
+      <h3>Realizări</h3>
+      <div id="achievementsDiv"></div>
+    </div>
+    
+    <div id="prestigeRewardsSection">
+      <h4>Recompense Prestige</h4>
+      <div id="prestigeRewardsDiv"></div>
+    </div>
   </div>
 
   <div id="game">
     <h1>Sifon Clicker</h1>
     <div id="sifon"></div>
     <div id="scoreDisplay">Carbonatari: <span id="score">0</span></div>
+    <div id="rateDisplay">Per click: 1 | Per secundă: 0</div>
     <div id="multiplierDisplay">Multiplicator total: x1.00</div>
     <div id="message"></div>
     <div id="upgrades"></div>
@@ -207,6 +364,11 @@
     <button id="clickBoostBtn">Boost Click x5 (cost: 5000)</button>
     <div id="boostTimer"></div>
     
+    <div id="bonusesSection">
+      <h3>Bonusuri Temporare</h3>
+      <div id="bonusesDiv"></div>
+    </div>
+    
     <div id="cosmeticsSection">
       <h3>Cosmetice</h3>
       <div id="cosmeticsDiv"></div>
@@ -217,14 +379,35 @@
     let score = 0;
     let prestigePoints = 0;
     let prestigeMultiplier = 1;
+    let prestigeCost = 10000;
+    let totalPrestiges = 0;
     let soundOn = true;
     let totalClicks = 0;
     let clickBoostActive = false;
     let clickBoostMultiplier = 1;
     let boostTimeout;
     let coconutUnlocked = false;
+    let currentSkin = 'sifon mic.png';
+    let gameStartTime = Date.now();
+    let totalGameTime = 0;
+    let highestCPS = 0;
+    let mostExpensiveUpgrade = 0;
+    let activeBonus = null;
+    let bonusTimeout = null;
+
+    // Special upgrades
+    let turboEngine = 0;
+    let efficiencyCore = 0;
+    let clickAmplifier = 0;
+
+    // Prestige rewards
+    let fasterProduction = 0;
+    let betterBonuses = 0;
+    let cheaperUpgrades = 0;
+    let newMechanics = 0;
 
     const scoreDisplay = document.getElementById('score');
+    const rateDisplay = document.getElementById('rateDisplay');
     const multiplierDisplay = document.querySelector('#multiplierDisplay');
     const message = document.getElementById('message');
     const upgradesDiv = document.getElementById('upgrades');
@@ -242,6 +425,9 @@
     const clickBoostBtn = document.getElementById('clickBoostBtn');
     const boostTimer = document.getElementById('boostTimer');
     const cosmeticsDiv = document.getElementById('cosmeticsDiv');
+    const bonusesDiv = document.getElementById('bonusesDiv');
+    const achievementsDiv = document.getElementById('achievementsDiv');
+    const prestigeRewardsDiv = document.getElementById('prestigeRewardsDiv');
 
     const clickSound = document.getElementById('clickSound');
     const upgradeSound = document.getElementById('upgradeSound');
@@ -264,8 +450,48 @@
       { id: 'quantum', name: 'Sifon cuantic', description: 'Crește click-ul cu 5', cost: 500000, cps: 0, clickBonus: 5, level: 0 }
     ];
 
+    const specialUpgrades = [
+      { id: 'turbo', name: 'Turbo Engine', description: 'Reduce toate costurile cu 5%', cost: 50000, maxLevel: 10 },
+      { id: 'efficiency', name: 'Efficiency Core', description: 'CPS upgrades produc cu 25% mai mult', cost: 75000, maxLevel: 8 },
+      { id: 'amplifier', name: 'Click Amplifier', description: '5% șansă ca click-ul să se dubleze', cost: 100000, maxLevel: 5 }
+    ];
+
     const cosmetics = [
-      { id: 'coconut', name: 'Coconut Special', description: 'Schimbă sifonul într-un coconut special!', cost: 1000, unlocked: false, image: 'coconut.png' }
+      { id: 'coconut', name: 'Coconut', description: 'Schimbă sifonul într-un coconut!', cost: 1000, image: 'coconut.png' },
+      { id: 'golden', name: 'Golden Sifon', description: 'Sifon auriu strălucitor!', cost: 10000, image: 'golden_sifon.png' },
+      { id: 'rainbow', name: 'Rainbow Sifon', description: 'Sifon curcubeu colorat!', cost: 25000, image: 'rainbow_sifon.png' },
+      { id: 'diamond', name: 'Diamond Sifon', description: 'Sifon diamant transparent!', cost: 100000, image: 'diamond_sifon.png' },
+      { id: 'fire', name: 'Fire Sifon', description: 'Sifon în flăcări!', cost: 50000, image: 'fire_sifon.png' },
+      { id: 'ice', name: 'Ice Sifon', description: 'Sifon de gheață!', cost: 35000, image: 'ice_sifon.png' },
+      { id: 'neon', name: 'Neon Sifon', description: 'Sifon neon strălucitor!', cost: 75000, image: 'neon_sifon.png' },
+      { id: 'pixel', name: 'Retro Pixel Sifon', description: 'Sifon în stil retro!', cost: 15000, image: 'pixel_sifon.png' },
+      { id: 'space', name: 'Space Sifon', description: 'Sifon galactic!', cost: 200000, image: 'space_sifon.png' }
+    ];
+
+    const bonuses = [
+      { id: 'doublecps', name: 'Double CPS', description: 'Dublează CPS timp de 30s', cost: 8000, duration: 30, multiplier: 2 },
+      { id: 'autoclicker', name: 'Auto-clicker', description: 'Click automat timp de 60s', cost: 12000, duration: 60 },
+      { id: 'luckyclicks', name: 'Lucky Clicks', description: '10% șansă pentru 10x click timp de 45s', cost: 15000, duration: 45 },
+      { id: 'megamult', name: 'Mega Multiplier', description: 'x10 multiplicator timp de 20s', cost: 25000, duration: 20, multiplier: 10 },
+      { id: 'carbonrain', name: 'Carbonatar Rain', description: 'Bonusuri random timp de 15s', cost: 10000, duration: 15 }
+    ];
+
+    const achievements = [
+      { id: 'firstclick', name: 'First Steps', description: 'Fă primul click', condition: () => totalClicks >= 1, unlocked: false },
+      { id: 'hundred', name: 'Hundred Club', description: 'Ajunge la 100 carbonatari', condition: () => score >= 100, unlocked: false },
+      { id: 'clickmaster', name: 'Click Master', description: 'Fă 1,000 de click-uri', condition: () => totalClicks >= 1000, unlocked: false },
+      { id: 'millionaire', name: 'Millionaire', description: 'Ajunge la 1,000,000 carbonatari', condition: () => score >= 1000000, unlocked: false },
+      { id: 'speeddemon', name: 'Speed Demon', description: 'Fă 10 click-uri într-o secundă', condition: () => false, unlocked: false }, // Special tracking needed
+      { id: 'prestigepioneer', name: 'Prestige Pioneer', description: 'Completează primul prestige', condition: () => totalPrestiges >= 1, unlocked: false },
+      { id: 'upgradecollector', name: 'Upgrade Collector', description: 'Cumpără toate tipurile de upgrade-uri', condition: () => upgrades.every(u => u.level > 0), unlocked: false },
+      { id: 'cosmetichunter', name: 'Cosmetic Hunter', description: 'Deține 5 skin-uri diferite', condition: () => cosmetics.filter(c => c.unlocked).length >= 5, unlocked: false }
+    ];
+
+    const prestigeRewards = [
+      { id: 'faster', name: 'Faster Production', description: 'CPS lucrează mai rapid (+20%)', cost: 3, maxLevel: 5 },
+      { id: 'better', name: 'Better Bonuses', description: 'Bonusurile durează mai mult (+25%)', cost: 5, maxLevel: 4 },
+      { id: 'cheaper', name: 'Cheaper Upgrades', description: 'Toate costurile reduse (-10%)', cost: 4, maxLevel: 8 },
+      { id: 'mechanics', name: 'New Mechanics', description: 'Deblochează funcții noi', cost: 10, maxLevel: 3 }
     ];
 
     // Cookie helper functions
@@ -296,14 +522,34 @@
         score: score,
         prestigePoints: prestigePoints,
         prestigeMultiplier: prestigeMultiplier,
+        prestigeCost: prestigeCost,
+        totalPrestiges: totalPrestiges,
         totalClicks: totalClicks,
         soundOn: soundOn,
         volume: volumeSlider.value,
-        coconutUnlocked: coconutUnlocked,
+        currentSkin: currentSkin,
+        totalGameTime: totalGameTime + (Date.now() - gameStartTime),
+        highestCPS: highestCPS,
+        mostExpensiveUpgrade: mostExpensiveUpgrade,
+        turboEngine: turboEngine,
+        efficiencyCore: efficiencyCore,
+        clickAmplifier: clickAmplifier,
+        fasterProduction: fasterProduction,
+        betterBonuses: betterBonuses,
+        cheaperUpgrades: cheaperUpgrades,
+        newMechanics: newMechanics,
         upgrades: upgrades.map(u => ({
           id: u.id,
           level: u.level,
           cost: u.cost
+        })),
+        cosmetics: cosmetics.map(c => ({
+          id: c.id,
+          unlocked: c.unlocked || false
+        })),
+        achievements: achievements.map(a => ({
+          id: a.id,
+          unlocked: a.unlocked
         })),
         saveDate: new Date().toISOString()
       };
@@ -324,9 +570,21 @@
           score = data.score || 0;
           prestigePoints = data.prestigePoints || 0;
           prestigeMultiplier = data.prestigeMultiplier || 1;
+          prestigeCost = data.prestigeCost || 10000;
+          totalPrestiges = data.totalPrestiges || 0;
           totalClicks = data.totalClicks || 0;
           soundOn = data.soundOn !== undefined ? data.soundOn : true;
-          coconutUnlocked = data.coconutUnlocked || false;
+          currentSkin = data.currentSkin || 'sifon mic.png';
+          totalGameTime = data.totalGameTime || 0;
+          highestCPS = data.highestCPS || 0;
+          mostExpensiveUpgrade = data.mostExpensiveUpgrade || 0;
+          turboEngine = data.turboEngine || 0;
+          efficiencyCore = data.efficiencyCore || 0;
+          clickAmplifier = data.clickAmplifier || 0;
+          fasterProduction = data.fasterProduction || 0;
+          betterBonuses = data.betterBonuses || 0;
+          cheaperUpgrades = data.cheaperUpgrades || 0;
+          newMechanics = data.newMechanics || 0;
           
           if (data.volume !== undefined) {
             volumeSlider.value = data.volume;
@@ -345,12 +603,34 @@
               }
             });
           }
+
+          if (data.cosmetics) {
+            data.cosmetics.forEach(savedCosmetic => {
+              const cosmetic = cosmetics.find(c => c.id === savedCosmetic.id);
+              if (cosmetic) {
+                cosmetic.unlocked = savedCosmetic.unlocked || false;
+              }
+            });
+          }
+
+          if (data.achievements) {
+            data.achievements.forEach(savedAchievement => {
+              const achievement = achievements.find(a => a.id === savedAchievement.id);
+              if (achievement) {
+                achievement.unlocked = savedAchievement.unlocked || false;
+              }
+            });
+          }
           
           volumeBtn.textContent = soundOn ? 'Sunet: On' : 'Sunet: Off';
+          gameStartTime = Date.now();
           
           updateScoreDisplay();
           updateUpgrades();
           updateCosmetics();
+          updateBonuses();
+          updateAchievements();
+          updatePrestigeRewards();
           updateSifonImage();
           checkPrestige();
           updateLeftPanel();
@@ -373,15 +653,33 @@
         score = 0;
         prestigePoints = 0;
         prestigeMultiplier = 1;
+        prestigeCost = 10000;
+        totalPrestiges = 0;
         totalClicks = 0;
         soundOn = true;
         clickBoostActive = false;
         clickBoostMultiplier = 1;
-        coconutUnlocked = false;
+        currentSkin = 'sifon mic.png';
+        totalGameTime = 0;
+        highestCPS = 0;
+        mostExpensiveUpgrade = 0;
+        turboEngine = 0;
+        efficiencyCore = 0;
+        clickAmplifier = 0;
+        fasterProduction = 0;
+        betterBonuses = 0;
+        cheaperUpgrades = 0;
+        newMechanics = 0;
+        gameStartTime = Date.now();
         
         if (boostTimeout) {
           clearInterval(boostTimeout);
           boostTimeout = null;
+        }
+
+        if (bonusTimeout) {
+          clearInterval(bonusTimeout);
+          bonusTimeout = null;
         }
         
         upgrades.forEach(u => {
@@ -396,6 +694,9 @@
           else if (u.id === 'robot') u.cost = 100000;
           else if (u.id === 'quantum') u.cost = 500000;
         });
+
+        cosmetics.forEach(c => c.unlocked = false);
+        achievements.forEach(a => a.unlocked = false);
         
         volumeSlider.value = 1;
         clickSound.volume = 1;
@@ -406,6 +707,7 @@
         
         clickBoostBtn.disabled = false;
         boostTimer.textContent = '';
+        activeBonus = null;
         
         // Delete saved data from cookies
         deleteCookie('sifonClickerSave');
@@ -413,6 +715,9 @@
         updateScoreDisplay();
         updateUpgrades();
         updateCosmetics();
+        updateBonuses();
+        updateAchievements();
+        updatePrestigeRewards();
         updateSifonImage();
         checkPrestige();
         updateLeftPanel();
@@ -436,32 +741,68 @@
 
     function updateScoreDisplay() {
       scoreDisplay.textContent = Math.floor(score);
-      multiplierDisplay.textContent = `Multiplicator total: x${(prestigeMultiplier).toFixed(2)}`;
+      const perClick = (1 + calculateClickBonus()) * prestigeMultiplier * clickBoostMultiplier;
+      const perSecond = calculateCPS() * prestigeMultiplier;
+      rateDisplay.textContent = `Per click: ${perClick.toFixed(1)} | Per secundă: ${perSecond.toFixed(1)}`;
+      multiplierDisplay.textContent = `Multiplicator total: x${prestigeMultiplier.toFixed(2)}`;
+      
+      // Update highest CPS
+      if (perSecond > highestCPS) {
+        highestCPS = perSecond;
+      }
     }
 
     function updateLeftPanel() {
       const totalUpgrades = upgrades.reduce((sum, u) => sum + u.level, 0);
+      const playTimeMinutes = Math.floor((totalGameTime + (Date.now() - gameStartTime)) / 60000);
       leftPanel.innerHTML = `
         <h2>Statistici</h2>
         <p>Total Carbonatari: ${Math.floor(score)}</p>
         <p>Total Click-uri: ${totalClicks}</p>
         <p>Upgrade-uri cumpărate: ${totalUpgrades}</p>
         <p>Puncte Prestige: ${prestigePoints}</p>
+        <p>Timp jucat: ${playTimeMinutes}m</p>
+        <p>Cel mai mare CPS: ${highestCPS.toFixed(1)}</p>
+        <p>Cel mai scump upgrade: ${mostExpensiveUpgrade}</p>
+        <p>Prestige-uri: ${totalPrestiges}</p>
+        
+        <div id="achievementsSection">
+          <h3>Realizări</h3>
+          <div id="achievementsDiv"></div>
+        </div>
+        
+        <div id="prestigeRewardsSection">
+          <h4>Recompense Prestige</h4>
+          <div id="prestigeRewardsDiv"></div>
+        </div>
       `;
+      
+      // Re-get elements after innerHTML update
+      const newAchievementsDiv = document.getElementById('achievementsDiv');
+      const newPrestigeRewardsDiv = document.getElementById('prestigeRewardsDiv');
+      if (newAchievementsDiv) updateAchievements(newAchievementsDiv);
+      if (newPrestigeRewardsDiv) updatePrestigeRewards(newPrestigeRewardsDiv);
     }
 
     function updateUpgrades() {
       upgradesDiv.innerHTML = '';
+      
+      // Regular upgrades
       upgrades.forEach(upg => {
         const btn = document.createElement('button');
         btn.className = 'upgrade';
-        btn.textContent = `${upg.name} (Cost: ${upg.cost})\n${upg.description}\nNivel: ${upg.level}`;
-        btn.disabled = score < upg.cost;
+        const adjustedCost = Math.floor(upg.cost * (1 - (cheaperUpgrades * 0.1)) * (1 - (turboEngine * 0.05)));
+        btn.textContent = `${upg.name} (Cost: ${adjustedCost})\n${upg.description}\nNivel: ${upg.level}`;
+        btn.disabled = score < adjustedCost;
         btn.title = `${upg.description}`;
         btn.addEventListener('click', () => {
-          if (score >= upg.cost) {
-            score -= upg.cost;
+          if (score >= adjustedCost) {
+            score -= adjustedCost;
             upg.level++;
+            // Track most expensive upgrade
+            if (adjustedCost > mostExpensiveUpgrade) {
+              mostExpensiveUpgrade = adjustedCost;
+            }
             // Costul crește cu 15% la fiecare nivel
             upg.cost = Math.floor(upg.cost * 1.15);
             if (soundOn) {
@@ -471,12 +812,54 @@
             updateScoreDisplay();
             updateUpgrades();
             updateCosmetics();
+            updateBonuses();
+            updateAchievements();
             checkPrestige();
             updateLeftPanel();
             saveGame(); // Auto-save after upgrade
           }
         });
         upgradesDiv.appendChild(btn);
+      });
+
+      // Special upgrades
+      specialUpgrades.forEach(upg => {
+        let currentLevel = 0;
+        let maxLevel = upg.maxLevel;
+        
+        if (upg.id === 'turbo') currentLevel = turboEngine;
+        else if (upg.id === 'efficiency') currentLevel = efficiencyCore;
+        else if (upg.id === 'amplifier') currentLevel = clickAmplifier;
+
+        if (currentLevel < maxLevel) {
+          const btn = document.createElement('button');
+          btn.className = 'upgrade special-upgrade';
+          const cost = Math.floor(upg.cost * Math.pow(1.5, currentLevel));
+          btn.textContent = `${upg.name} (Cost: ${cost})\n${upg.description}\nNivel: ${currentLevel}/${maxLevel}`;
+          btn.disabled = score < cost;
+          btn.title = `${upg.description}`;
+          btn.addEventListener('click', () => {
+            if (score >= cost) {
+              score -= cost;
+              if (upg.id === 'turbo') turboEngine++;
+              else if (upg.id === 'efficiency') efficiencyCore++;
+              else if (upg.id === 'amplifier') clickAmplifier++;
+              
+              if (soundOn) {
+                upgradeSound.currentTime = 0;
+                upgradeSound.play();
+              }
+              updateScoreDisplay();
+              updateUpgrades();
+              updateCosmetics();
+              updateBonuses();
+              checkPrestige();
+              updateLeftPanel();
+              saveGame();
+            }
+          });
+          upgradesDiv.appendChild(btn);
+        }
       });
     }
 
@@ -486,17 +869,24 @@
         const btn = document.createElement('button');
         btn.className = 'cosmetic';
         
-        if (cosmetic.id === 'coconut' && coconutUnlocked) {
-          btn.textContent = `${cosmetic.name} - CUMPĂRAT ✓`;
+        if (cosmetic.unlocked) {
+          btn.textContent = `${cosmetic.name} - DEȚINUT ✓`;
           btn.className += ' owned';
-          btn.disabled = true;
+          btn.addEventListener('click', () => {
+            currentSkin = cosmetic.image;
+            updateSifonImage();
+            message.textContent = `Skin schimbat la ${cosmetic.name}!`;
+            setTimeout(() => { message.textContent = ''; }, 2000);
+            saveGame();
+          });
         } else {
-          btn.textContent = `${cosmetic.name} (Cost: ${cosmetic.cost})\n${cosmetic.description}`;
+          btn.textContent = `${cosmetic.name} (${cosmetic.cost})`;
           btn.disabled = score < cosmetic.cost;
           btn.addEventListener('click', () => {
-            if (score >= cosmetic.cost && !coconutUnlocked) {
+            if (score >= cosmetic.cost) {
               score -= cosmetic.cost;
-              coconutUnlocked = true;
+              cosmetic.unlocked = true;
+              currentSkin = cosmetic.image;
               if (soundOn) {
                 upgradeSound.currentTime = 0;
                 upgradeSound.play();
@@ -505,10 +895,12 @@
               updateScoreDisplay();
               updateUpgrades();
               updateCosmetics();
+              updateBonuses();
+              updateAchievements();
               checkPrestige();
               updateLeftPanel();
               saveGame();
-              message.textContent = 'Coconut cumpărat! Sifonul s-a transformat!';
+              message.textContent = `${cosmetic.name} cumpărat și activat!`;
               setTimeout(() => { message.textContent = ''; }, 4000);
             }
           });
@@ -517,16 +909,158 @@
       });
     }
 
+    function updateBonuses() {
+      bonusesDiv.innerHTML = '';
+      bonuses.forEach(bonus => {
+        const btn = document.createElement('button');
+        btn.className = 'bonus';
+        btn.textContent = `${bonus.name} (${bonus.cost})`;
+        btn.disabled = score < bonus.cost || activeBonus === bonus.id;
+        btn.addEventListener('click', () => {
+          if (score >= bonus.cost && !activeBonus) {
+            score -= bonus.cost;
+            activateBonus(bonus);
+            if (soundOn) {
+              upgradeSound.currentTime = 0;
+              upgradeSound.play();
+            }
+            updateScoreDisplay();
+            updateUpgrades();
+            updateCosmetics();
+            updateBonuses();
+            checkPrestige();
+            updateLeftPanel();
+            saveGame();
+          }
+        });
+        bonusesDiv.appendChild(btn);
+      });
+    }
+
+    function activateBonus(bonus) {
+      activeBonus = bonus.id;
+      const duration = bonus.duration * (1 + (betterBonuses * 0.25));
+      let timeLeft = Math.floor(duration);
+      
+      message.textContent = `${bonus.name} activat pentru ${timeLeft} secunde!`;
+      
+      bonusTimeout = setInterval(() => {
+        timeLeft--;
+        boostTimer.textContent = `${bonus.name}: ${timeLeft}s`;
+        
+        if (bonus.id === 'autoclicker') {
+          // Auto-click every 0.5 seconds
+          if (timeLeft % 0.5 === 0) {
+            simulateClick();
+          }
+        } else if (bonus.id === 'carbonrain') {
+          // Random bonus every 2 seconds
+          if (timeLeft % 2 === 0) {
+            const bonusAmount = Math.floor(Math.random() * 100) + 50;
+            score += bonusAmount;
+            updateScoreDisplay();
+          }
+        }
+        
+        if (timeLeft <= 0) {
+          clearInterval(bonusTimeout);
+          activeBonus = null;
+          bonusTimeout = null;
+          boostTimer.textContent = '';
+          updateBonuses();
+          message.textContent = `${bonus.name} terminat.`;
+          setTimeout(() => { message.textContent = ''; }, 2000);
+        }
+      }, 1000);
+      
+      updateBonuses();
+    }
+
+    function updateAchievements(targetDiv = null) {
+      const div = targetDiv || document.getElementById('achievementsDiv');
+      if (!div) return;
+      
+      div.innerHTML = '';
+      achievements.forEach(achievement => {
+        if (!achievement.unlocked && achievement.condition()) {
+          achievement.unlocked = true;
+          message.textContent = `Realizare deblocată: ${achievement.name}!`;
+          setTimeout(() => { message.textContent = ''; }, 3000);
+          if (soundOn) {
+            upgradeSound.currentTime = 0;
+            upgradeSound.play();
+          }
+        }
+        
+        const div2 = document.createElement('div');
+        div2.className = `achievement ${achievement.unlocked ? 'unlocked' : 'locked'}`;
+        div2.textContent = `${achievement.name}: ${achievement.description}`;
+        if (achievement.unlocked) div2.textContent += ' ✓';
+        div.appendChild(div2);
+      });
+    }
+
+    function updatePrestigeRewards(targetDiv = null) {
+      const div = targetDiv || document.getElementById('prestigeRewardsDiv');
+      if (!div) return;
+      
+      div.innerHTML = '';
+      prestigeRewards.forEach(reward => {
+        let currentLevel = 0;
+        if (reward.id === 'faster') currentLevel = fasterProduction;
+        else if (reward.id === 'better') currentLevel = betterBonuses;
+        else if (reward.id === 'cheaper') currentLevel = cheaperUpgrades;
+        else if (reward.id === 'mechanics') currentLevel = newMechanics;
+
+        if (currentLevel < reward.maxLevel) {
+          const btn = document.createElement('button');
+          btn.className = 'prestige-reward';
+          const cost = reward.cost + (currentLevel * 2);
+          btn.textContent = `${reward.name} (${cost} PP)\n${reward.description}\n${currentLevel}/${reward.maxLevel}`;
+          btn.disabled = prestigePoints < cost;
+          btn.addEventListener('click', () => {
+            if (prestigePoints >= cost) {
+              prestigePoints -= cost;
+              if (reward.id === 'faster') fasterProduction++;
+              else if (reward.id === 'better') betterBonuses++;
+              else if (reward.id === 'cheaper') cheaperUpgrades++;
+              else if (reward.id === 'mechanics') newMechanics++;
+              
+              if (soundOn) {
+                prestigeSound.currentTime = 0;
+                prestigeSound.play();
+              }
+              updatePrestigeRewards();
+              updateLeftPanel();
+              message.textContent = `${reward.name} îmbunătățit!`;
+              setTimeout(() => { message.textContent = ''; }, 2000);
+              saveGame();
+            }
+          });
+          div.appendChild(btn);
+        } else {
+          const maxDiv = document.createElement('div');
+          maxDiv.className = 'prestige-reward owned';
+          maxDiv.textContent = `${reward.name} - MAX`;
+          div.appendChild(maxDiv);
+        }
+      });
+    }
+
     function updateSifonImage() {
-      if (coconutUnlocked) {
-        sifon.style.backgroundImage = "url('coconut.png')";
-      } else {
-        sifon.style.backgroundImage = "url('sifon mic.png')";
-      }
+      sifon.style.backgroundImage = `url('${currentSkin}')`;
     }
 
     function calculateCPS() {
-      return upgrades.reduce((sum, u) => sum + (u.cps * u.level), 0);
+      let baseCPS = upgrades.reduce((sum, u) => sum + (u.cps * u.level), 0);
+      baseCPS *= (1 + (efficiencyCore * 0.25)); // Efficiency Core bonus
+      baseCPS *= (1 + (fasterProduction * 0.2)); // Faster Production bonus
+      
+      if (activeBonus === 'doublecps') {
+        baseCPS *= 2;
+      }
+      
+      return baseCPS;
     }
 
     function calculateClickBonus() {
@@ -534,13 +1068,47 @@
     }
 
     function checkPrestige() {
-      prestigeBtn.disabled = score < 10000;
+      prestigeBtn.disabled = score < prestigeCost;
+      prestigeBtn.textContent = `Prestige (cost: ${prestigeCost.toLocaleString()})`;
+    }
+
+    function simulateClick() {
+      totalClicks++;
+      const baseClick = 1;
+      let clickValue = (baseClick + calculateClickBonus()) * prestigeMultiplier * clickBoostMultiplier;
+      
+      // Click Amplifier chance
+      if (Math.random() < (clickAmplifier * 0.05)) {
+        clickValue *= 2;
+      }
+      
+      // Lucky Clicks bonus
+      if (activeBonus === 'luckyclicks' && Math.random() < 0.1) {
+        clickValue *= 10;
+      }
+      
+      // Mega Multiplier bonus
+      if (activeBonus === 'megamult') {
+        clickValue *= 10;
+      }
+      
+      score += clickValue;
+      updateScoreDisplay();
+      updateUpgrades();
+      updateCosmetics();
+      updateBonuses();
+      updateAchievements();
+      checkPrestige();
+      updateLeftPanel();
     }
 
     prestigeBtn.addEventListener('click', () => {
-      if (score >= 10000) {
-        prestigePoints++;
-        prestigeMultiplier = 1 + prestigePoints * 0.5;
+      if (score >= prestigeCost) {
+        const prestigeGain = Math.floor(prestigeCost / 10000);
+        prestigePoints += prestigeGain;
+        totalPrestiges++;
+        prestigeMultiplier = 1 + (prestigePoints * 0.5);
+        prestigeCost = Math.floor(prestigeCost * 2.5); // Increase prestige cost significantly
         score = 0;
         upgrades.forEach(u => {
           u.level = 0;
@@ -561,31 +1129,26 @@
         updateScoreDisplay();
         updateUpgrades();
         updateCosmetics();
+        updateBonuses();
+        updateAchievements();
+        updatePrestigeRewards();
         updateSifonImage();
         checkPrestige();
         updateLeftPanel();
         saveGame(); // Auto-save after prestige
-        message.textContent = `Prestige activat! Ai ${prestigePoints} puncte prestige. Multiplicator: x${prestigeMultiplier.toFixed(2)}`;
+        message.textContent = `Prestige activat! +${prestigeGain} puncte prestige. Multiplicator: x${prestigeMultiplier.toFixed(2)}`;
         setTimeout(() => { message.textContent = ''; }, 4000);
       }
     });
 
     sifon.addEventListener('click', () => {
-      totalClicks++;
-      const baseClick = 1;
-      const clickValue = (baseClick + calculateClickBonus()) * prestigeMultiplier * clickBoostMultiplier;
-      score += clickValue;
+      simulateClick();
       if (soundOn) {
         clickSound.currentTime = 0;
         clickSound.play();
       }
       sifon.classList.add('clicked');
       setTimeout(() => sifon.classList.remove('clicked'), 150);
-      updateScoreDisplay();
-      updateUpgrades();
-      updateCosmetics();
-      checkPrestige();
-      updateLeftPanel();
     });
 
     // Automat - crește scorul pe secundă
@@ -595,6 +1158,8 @@
       updateScoreDisplay();
       updateUpgrades();
       updateCosmetics();
+      updateBonuses();
+      updateAchievements();
       checkPrestige();
       updateLeftPanel();
     }, 1000);
@@ -638,6 +1203,7 @@
         updateScoreDisplay();
         updateUpgrades();
         updateCosmetics();
+        updateBonuses();
         checkPrestige();
         updateLeftPanel();
         message.textContent = 'Boost Click activat pentru 30 secunde!';
@@ -679,6 +1245,9 @@
     updateScoreDisplay();
     updateUpgrades();
     updateCosmetics();
+    updateBonuses();
+    updateAchievements();
+    updatePrestigeRewards();
     updateSifonImage();
     checkPrestige();
     updateLeftPanel();
